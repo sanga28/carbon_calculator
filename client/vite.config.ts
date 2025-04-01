@@ -5,22 +5,22 @@ import path, { dirname } from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 import { fileURLToPath } from "url";
 
-// Fix: Convert top-level await into an async function
 export default defineConfig(async () => {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
+
+  // Fix: Avoid top-level await by using async function inside defineConfig
+  const cartographerPlugin =
+    process.env.NODE_ENV !== "production" && process.env.REPL_ID !== undefined
+      ? (await import("@replit/vite-plugin-cartographer")).cartographer()
+      : null;
 
   return {
     plugins: [
       react(),
       runtimeErrorOverlay(),
       themePlugin(),
-      ...(process.env.NODE_ENV !== "production" &&
-      process.env.REPL_ID !== undefined
-        ? [
-            (await import("@replit/vite-plugin-cartographer")).cartographer(),
-          ]
-        : []),
+      ...(cartographerPlugin ? [cartographerPlugin] : []),
     ],
     resolve: {
       alias: {
@@ -36,4 +36,3 @@ export default defineConfig(async () => {
     },
   };
 });
-
